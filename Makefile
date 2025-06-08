@@ -1,53 +1,57 @@
-#
-# A Makefile that compiles all .c and .s files in "src" and "res" 
-# subdirectories and places the output in a "obj" subdirectory
-#
-
-# If you move this project you can change the directory 
-# to match your GBDK root directory (ex: GBDK_HOME = "C:/GBDK/"
+#filepath to gbdk installation
 ifndef GBDK_HOME
 	GBDK_HOME = ../gbdk/
 endif
 
+#################################
+#folder configuration
+
+GAMENAME    = piupocket
+OBJDIR      = obj
+INCLUDEDIR  = src
+INCLUDEDIR += res
+
+#find all source files
+rwildcard   = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+
+ROM         = $(OBJDIR)/$(GAMENAME).gbc
+SOURCES     = $(call rwildcard, ., *.c)
+
+#################################
+
+#LCC compiler options
 LCC = $(GBDK_HOME)bin/lcc
-LCCFLAGS= -Wf-I.
-LCCFLAGS += -Wm-yC -debug -Wm-yS
+#compiler flags
+#          warn as error       inc dir
+LCCFLAGS += -Wf--Werror $(INCLUDEDIR:%=-Wf-I%)
+#makebin flags
+#            gbc    .sym  JP-flag    MBC      cart name         license code
+LCCFLAGS += -Wm-yC -Wm-yS -Wm-yj -Wm-yt0x1B -Wm-ynINFINITYPOCKET -Wm-yk":)"
+#lcc flags
+LCCFLAGS += -debug -autobank
 
-PROJECTNAME    = mudgirl_2
+##################################
 
-SRCDIR      = ./src
-OBJDIR      = ./obj
-RESDIR      = ./res
-BINS	    = $(OBJDIR)/$(PROJECTNAME).gbc
-CSOURCES    = $(foreach dir,$(SRCDIR),$(notdir $(wildcard $(dir)/*.c))) $(foreach dir,$(RESDIR),$(notdir $(wildcard $(dir)/*.c)))
-ASMSOURCES  = $(foreach dir,$(SRCDIR),$(notdir $(wildcard $(dir)/*.s)))
-OBJS       = $(CSOURCES:%.c=$(OBJDIR)/%.o) $(ASMSOURCES:%.s=$(OBJDIR)/%.o)
+.PHONY: all
+all: ${ROM}
 
-all:	prepare $(BINS)
-
-# Compile .c files in "src/" to .o object files
-$(OBJDIR)/%.o:	$(SRCDIR)/%.c
-	$(LCC) $(LCCFLAGS) -c -o $@ $<
-
-# Compile .c files in "res/" to .o object files
-$(OBJDIR)/%.o:	$(RESDIR)/%.c
-	$(LCC) $(LCCFLAGS) -c -o $@ $<
-
-# Compile .s assembly files in "src/" to .o object files
-$(OBJDIR)/%.o:	$(SRCDIR)/%.s
-	$(LCC) $(LCCFLAGS) -c -o $@ $<
-
-# If needed, compile .c files in "src/" to .s assembly files
-# (not required if .c is compiled directly to .o)
-$(OBJDIR)/%.s:	$(SRCDIR)/%.c
-	$(LCC) $(LCCFLAGS) -S -o $@ $<
-
-# Link the compiled object files into a .gbc ROM file
-$(BINS):	$(OBJS)
-	$(LCC) $(LCCFLAGS) -o $(BINS) $(OBJS)
-
-prepare:
-	mkdir -p $(OBJDIR)
-
+.PHONY: clean
 clean:
-	rm -f  $(OBJDIR)/*.*
+	rm -rf ${OBJDIR}
+
+.PHONY: from-scratch
+from-scratch:
+	${MAKE} clean
+	${MAKE} all
+
+#################################
+
+${ROM}: $(patsubst %.c, ${OBJDIR}/%.o, ${SOURCES})
+	@#mirror the folder structure and build
+	@mkdir -p "${@D}"
+	$(LCC) $(LCCFLAGS) -o $(ROM) $^
+
+${OBJDIR}/%.o: %.c
+	@#mirror the folder structure and build
+	@mkdir -p "${@D}"
+	$(LCC) $(LCCFLAGS) -c -o $@ $<
