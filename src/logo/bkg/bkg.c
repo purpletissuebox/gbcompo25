@@ -1,5 +1,6 @@
 #include "hello.h"
 #include "common/actor.h"
+#include "common/fade.h"
 #include <gb/gb.h>
 #include <gb/cgb.h>
 
@@ -10,7 +11,8 @@ void loadBKG(Actor *self)
     set_bkg_tiles(0, 0, 20, 18, helloworld_tilemap);
     VBK_REG = 1;
     set_bkg_tiles(0, 0, 20, 18, helloworld_attrmap);
-    set_bkg_palette(0, 1, pal);
+    
+    loadColors(pal, 0, 4);
 
     SHOW_BKG;
     removeActor(self);
