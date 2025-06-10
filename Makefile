@@ -1,7 +1,10 @@
-#filepath to gbdk installation
-ifndef GBDK_HOME
-	GBDK_HOME = ../gbdk/
-endif
+# IMPORTANT!!1!11!:w
+
+# Add GBDK to your path, otherwise project won't compile
+# Also, it seems like the GBDK devs are the dumbest fucks ever 
+# born and made their lcc look for sdcc in some predefined loc.
+# If running make doesn't work, try setting GBDKDIR var as well
+# to the path of your GBDK directory.
 
 #################################
 #folder configuration
@@ -20,15 +23,15 @@ SOURCES     = $(call rwildcard, ., *.c)
 #################################
 
 #LCC compiler options
-LCC = $(GBDK_HOME)bin/lcc
+CC = lcc
 #compiler flags
 #          warn as error       inc dir
-LCCFLAGS += -Wf--Werror $(INCLUDEDIR:%=-Wf-I%)
+CCFLAGS += -Wf--Werror $(INCLUDEDIR:%=-Wf-I%)
 #makebin flags
 #            gbc    .sym  JP-flag    MBC      cart name         license code
-LCCFLAGS += -Wm-yC -Wm-yS -Wm-yj -Wm-yt0x1B -Wm-ynINFINITYPOCKET -Wm-yk":)"
+CCFLAGS += -Wm-yC -Wm-yS -Wm-yj -Wm-yt0x1B -Wm-ynINFINITYPOCKET -Wm-yk":)"
 #lcc flags
-LCCFLAGS += -debug -autobank
+CCFLAGS += -debug -autobank
 
 ##################################
 
@@ -49,9 +52,9 @@ from-scratch:
 ${ROM}: $(patsubst %.c, ${OBJDIR}/%.o, ${SOURCES})
 	@#mirror the folder structure and build
 	@mkdir -p "${@D}"
-	$(LCC) $(LCCFLAGS) -o $(ROM) $^
+	$(CC) $(CCFLAGS) -o $(ROM) $^
 
 ${OBJDIR}/%.o: %.c
 	@#mirror the folder structure and build
 	@mkdir -p "${@D}"
-	$(LCC) $(LCCFLAGS) -c -o $@ $<
+	$(CC) $(CCFLAGS) -c -o $@ $<
