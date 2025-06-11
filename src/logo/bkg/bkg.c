@@ -12,7 +12,7 @@ void loadBKG(Actor *self)
     VBK_REG = 1;
     set_bkg_tiles(0, 0, 20, 18, helloworld_attrmap);
     
-    loadColors(pal, 0, 4);
+    loadColors(pal);
 
     SHOW_BKG;
     removeActor(self);
