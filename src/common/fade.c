@@ -4,7 +4,8 @@
 
 u16 fadeAmt = 0;
 u8 activeColors[32][3];
-const u8 fadeLUT[32][32] = {
+u16 colorBuf[8][4];
+const u8 __at(0x1000) fadeLUT[32][32] = {
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2},
@@ -39,17 +40,119 @@ const u8 fadeLUT[32][32] = {
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31},
 };
 
-void loadColors(u16 *colors, u8 palette, u8 N)
-{
-	u8 *p = activeColors[palette];
 
-	do
-	{
-		*p++ = (*colors & 0x001F) >> 0;
-		*p++ = (*colors & 0x03E0) >> 5;
-		*p++ = (*colors & 0x7C00) >> 10;
-		colors++;
-	} while (--N);
+void loadColors(u16 *colors) __naked
+{
+	colors;
+	__asm
+		ld hl, #_activeColors
+		ld b, #32
+		LOADCOLORS_ASM_LOOP:
+			ld a, (de)
+			inc de
+			ld c, a
+			and #31
+			ld (hl+), a
+
+			ld a, (de)
+			rl c
+			adc a
+			rl c
+			adc a
+			rl c
+			adc a
+			and #31
+			ld (hl+), a
+
+			ld a, (de)
+			inc de
+			rra
+			rra
+			and #31
+			ld (hl+), a
+
+			dec b
+		jr nz, LOADCOLORS_ASM_LOOP
+		ret
+	__endasm;
+}
+
+void updateScreenColors2(u8 fade_amt)
+{
+	fade_amt;
+	__asm
+		add a
+		add a
+		add a
+		ld b, #0
+		add a
+		rl b
+		add a
+		rl b
+		ld c, a
+		ld hl, #_fadeLUT
+		add hl, bc
+
+		ld bc, #_activeColors
+		ld de, #_colorBuf
+
+		UPDATESCREENCOLORS_ASM_LOOP :
+		push de
+			ld a, (bc)
+			inc c
+			add l
+			ld l, a
+			ld e, (hl)
+			and #224
+			ld l, a
+
+			ld a, (bc)
+			inc c
+			add l
+			ld l, a
+			ld d, (hl)
+			and #224
+			ld l, a
+
+			ld a, (bc)
+			inc c
+			add l
+			ld l, a
+			ld b, (hl)
+			and #224
+			ld l, a
+
+			ld a, e
+			add a
+			add a
+			add a
+			rr d
+			rra
+			rr d
+			rra
+			rr d
+			rra
+			ld e, a
+			ld a, b
+			add a
+			add a
+			or d
+			ld b, a
+			ld a, e
+			pop de
+			ld (de), a
+			inc de
+			ld a, b
+			ld (de), a
+			inc de
+			ld b, #>(_activeColors)
+
+			ld a, e
+			sub #<(_colorBuf + 64)
+		jr nz, UPDATESCREENCOLORS_ASM_LOOP
+	__endasm;
+
+	set_bkg_palette(0, 8, colorBuf[0]);
 }
 
 void updateScreenColors(u8 fade_amt)
@@ -74,6 +177,7 @@ void updateScreenColors(u8 fade_amt)
 u8 tickFade(u16 speed)
 {
 	u8 result = 0;
+
 	fadeAmt += speed;
 
 	if (fadeAmt & 0x8000)
@@ -86,7 +190,7 @@ u8 tickFade(u16 speed)
 		result = 1;
 		fadeAmt = 0x1F00;
 	}
-	updateScreenColors(fadeAmt >> 8);
+	updateScreenColors2(fadeAmt >> 8);
 	return result;
 }
 
