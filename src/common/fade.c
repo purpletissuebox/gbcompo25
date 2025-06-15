@@ -5,6 +5,9 @@
 u16 fadeAmt = 0;
 u8 activeColors[32][3];
 u16 colorBuf[8][4];
+const palette_color_t color_table[][32] = {
+	{ RGB(6,13,10), RGB(28,31,26), RGB(17,24,14), RGB(1,3,4) },
+};
 const u8 __at(0x1000) fadeLUT[32][32] = {
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -77,7 +80,7 @@ void loadColors(u16 *colors) __naked
 	__endasm;
 }
 
-void updateScreenColors2(u8 fade_amt)
+void updateScreenColors(u8 fade_amt)
 {
 	fade_amt;
 	__asm
@@ -155,43 +158,47 @@ void updateScreenColors2(u8 fade_amt)
 	set_bkg_palette(0, 8, colorBuf[0]);
 }
 
-void updateScreenColors(u8 fade_amt)
-{
-	u16 colorBuf[8][4]; //this will kill our stack lol
-	u8 *p = activeColors[0];
-	u16 *c = colorBuf[0];
-	u8 const * row = fadeLUT[fade_amt];
-	u8 N = 4;
-
-	do
-	{
-		*c  = (row[*p++]);
-		*c |= (row[*p++]) << 5;
-		*c |= (row[*p++]) << 10;
-		c++;
-	} while (--N);
-
-	set_bkg_palette(0, 1, colorBuf[0]);
-}
-
 u8 tickFade(u16 speed)
 {
-	u8 result = 0;
-
 	fadeAmt += speed;
+	updateScreenColors(fadeAmt >> 8);
+	return (fadeAmt >= 0x1F00);
+}
 
-	if (fadeAmt & 0x8000)
+void colorActor(Actor *self)
+{
+	u8 colorID = self->variable >> 8;
+	u8 speed = self->variable & 0xFF;
+	loadColors(color_table[colorID]);
+
+	if ((speed+1) < 2)
 	{
-		result = 1;
-		fadeAmt = 0x0000;
+		updateScreenColors(speed? 0x1F : 0);
+		removeActor(self);
+		return;
 	}
-	if (fadeAmt > 0x1F00)
+
+	fadeAmt = 0x00FF;
+	if (speed & 0x80)
 	{
-		result = 1;
+		speed ^= 0xFF;
 		fadeAmt = 0x1F00;
 	}
-	updateScreenColors2(fadeAmt >> 8);
-	return result;
+
+	if (speed < 0x40)
+		self->variable =    32 + (speed >> 1);
+	else if (speed < 0x60)
+		self->variable =   -64 + (speed << 1);
+	else if (speed < 0x70)
+		self->variable =  -634 + (speed << 3);
+	else
+		self->variable = -3322 + (speed << 5);
+
+	if (speed & 0x80)
+	{
+		self->variable ^= 0xFFFF;
+		self->variable += 1;
+	}
 }
 
 void fadeScreen(Actor *self)
