@@ -6,7 +6,7 @@
 Actor ACTORHEAP[32];
 Actor *next_free = ACTORHEAP + 1;
 
-void spawnActor(void (*actor_func)(Actor*), u8 bankID, u16 actor_var)
+void spawnActor(void (*actor_func)(Actor*), u8 bankID, u16 actor_var, void (*actor_init)(Actor*))
 {
 	//copy actor data into the list
 	next_free->process_flag = 1;
@@ -17,6 +17,10 @@ void spawnActor(void (*actor_func)(Actor*), u8 bankID, u16 actor_var)
 		memset(next_free->_actor_memory, 0, sizeof(next_free->_actor_memory));
 	#endif
 	next_free->next = NULL;
+
+	//init actor
+	if (actor_init)
+		actor_init(next_free);
 
 	//find end of list and append new actor
 	Actor *a = ACTORHEAP;
@@ -33,7 +37,7 @@ void spawnActor(void (*actor_func)(Actor*), u8 bankID, u16 actor_var)
 
 void spawnActorH(ActorHeader *a)
 {
-	spawnActor(a->process_func, a->bank, a->variable);
+	spawnActor(a->process_func, a->bank, a->variable, a->actor_init);
 }
 
 void removeActor(Actor *target)

@@ -18,12 +18,13 @@ typedef struct actor_header_t
 	void (*process_func)(struct actor_t *);
 	u8 bank;
 	u16 variable;
+	void (*actor_init)(struct actor_t *);
 } ActorHeader;
 
 extern Actor ACTORHEAP[32];
 extern Actor *next_free;
 
-void spawnActor(void (*)(Actor*), u8, u16);
+void spawnActor(void (*)(Actor*), u8, u16, void (*)(Actor *));
 void spawnActorH(ActorHeader *);
 void removeActor(Actor *);
 void runAllActors(void);
