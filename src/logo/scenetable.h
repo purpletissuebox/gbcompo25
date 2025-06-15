@@ -3,6 +3,6 @@
 #include "common/fade.h" 
 
 const ActorHeader logo[] = {
-	{loadBKG, 0, 0},
-	{fadeScreen, 0, 0x0080},
+	{loadBKG, 0, 0, NULL},
+	{fadeScreen, 0, 0x0060, colorActor}
 };
