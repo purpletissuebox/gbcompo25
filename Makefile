@@ -16,11 +16,16 @@ rwildcard   = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter 
 
 ROM         = $(OBJDIR)/$(GAMENAME).gbc
 SOURCES     = $(call rwildcard, ., *.c)
+OBJECTS     = $(patsubst ./%.c, ${OBJDIR}/%.o, ${SOURCES})
+DEPENDS     = $(patsubst %.o, %.d, $(OBJECTS))
 
 #################################
 
 #LCC compiler options
 LCC = $(GBDK_HOME)bin/lcc
+#preprocessor flags
+#
+LCCFLAGS += -Wp-MMD
 #compiler flags
 #          warn as error       inc dir
 LCCFLAGS += -Wf--Werror $(INCLUDEDIR:%=-Wf-I%)
@@ -46,12 +51,14 @@ from-scratch:
 
 #################################
 
-${ROM}: $(patsubst %.c, ${OBJDIR}/%.o, ${SOURCES})
+${ROM}: $(OBJECTS)
 	@#mirror the folder structure and build
 	@mkdir -p "${@D}"
 	$(LCC) $(LCCFLAGS) -o $(ROM) $^
 
-${OBJDIR}/%.o: %.c
+${OBJDIR}/%.o: %.c ./Makefile
 	@#mirror the folder structure and build
 	@mkdir -p "${@D}"
 	$(LCC) $(LCCFLAGS) -c -o $@ $<
+
+-include $(DEPENDS)
