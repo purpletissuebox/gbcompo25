@@ -1,6 +1,6 @@
 #include "init.h"
-#include "actor.h"
-#include "logo/joypad/joypad.h"
+#include "common/actor.h"
+#include "common/joypad/joypad.h"
 #include "common/scene.h"
 
 void init(void)
