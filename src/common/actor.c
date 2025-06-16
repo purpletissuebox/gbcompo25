@@ -20,7 +20,12 @@ void spawnActor(void (*actor_func)(Actor*), u8 bankID, u16 actor_var, void (*act
 
 	//init actor
 	if (actor_init)
+	{
+		u8 prev_bank = CURRENT_BANK;
+		SWITCH_ROM(bankID);
 		actor_init(next_free);
+		SWITCH_ROM(prev_bank);
+	}
 
 	//find end of list and append new actor
 	Actor *a = ACTORHEAP;
