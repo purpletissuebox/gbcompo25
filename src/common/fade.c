@@ -1,14 +1,12 @@
+#pragma bank 255
+
 #include <gb/cgb.h>
 #include "common.h"
 #include "actor.h"
 
-u16 fadeAmt = 0;
-u8 activeColors[32][3];
-u16 colorBuf[8][4];
-const palette_color_t color_table[][32] = {
-	{ RGB(6,13,10), RGB(28,31,26), RGB(17,24,14), RGB(1,3,4) },
-};
-const u8 __at(0x1000) fadeLUT[32][32] = {
+BANKREF(fadeScreen_bank)
+
+const u8 fadeLUT[32][32] = {
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2},
@@ -43,6 +41,12 @@ const u8 __at(0x1000) fadeLUT[32][32] = {
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31},
 };
 
+u16 fadeAmt = 0;
+u8 activeColors[32][3];
+u16 colorBuf[8][4];
+const palette_color_t color_table[][32] = {
+	{ RGB(6,13,10), RGB(28,31,26), RGB(17,24,14), RGB(1,3,4) },
+};
 
 void loadColors(u16 *colors) __naked
 {
