@@ -17,23 +17,26 @@ rwildcard   = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter 
 ROM         = $(OBJDIR)/$(GAMENAME).gbc
 SOURCES     = $(call rwildcard, ., *.c)
 OBJECTS     = $(patsubst ./%.c, ${OBJDIR}/%.o, ${SOURCES})
+RELOCATES   = $(patsubst %.o, %.r, $(OBJECTS))
 DEPENDS     = $(patsubst %.o, %.d, $(OBJECTS))
 
 #################################
 
-#LCC compiler options
-LCC = $(GBDK_HOME)bin/lcc
+#LCC compiler + flags
+LCCFLAGS += -debug -autobank
+LCC = $(GBDK_HOME)bin/lcc $(LCCFLAGS)
 #preprocessor flags
-#
-LCCFLAGS += -Wp-MMD
+#     track dependencies
+CPPFLAGS += -Wp-MMD
 #compiler flags
-#          warn as error       inc dir
-LCCFLAGS += -Wf--Werror $(INCLUDEDIR:%=-Wf-I%)
+#        warn as error       inc dir         do not link
+CFLAGS += -Wf--Werror $(INCLUDEDIR:%=-Wf-I%) -c
+#bankpack flags
+#        file extension    mbc      shuffle
+BANKFLAGS += -Wb-ext=.r -Wb-mbc=5 -Wb-random
 #makebin flags
 #            gbc    .sym  JP-flag    MBC      cart name         license code
-LCCFLAGS += -Wm-yC -Wm-yS -Wm-yj -Wm-yt0x1B -Wm-ynINFINITYPOCKET -Wm-yk":)"
-#lcc flags
-LCCFLAGS += -debug -autobank
+ROMFLAGS += -Wm-yC -Wm-yS -Wm-yj -Wm-yt0x1B -Wm-ynINFINITYPOCKET -Wm-yk":)"
 
 ##################################
 
@@ -52,13 +55,21 @@ from-scratch:
 #################################
 
 ${ROM}: $(OBJECTS)
-	@#mirror the folder structure and build
+	@#mirror the folder structure
 	@mkdir -p "${@D}"
-	$(LCC) $(LCCFLAGS) -o $(ROM) $^
+
+	@#create relocated objects with bankpack
+	$(LCC) $(BANKFLAGS) $^
+	rm ./a.*
+
+	@#create final rom
+	$(LCC) $(ROMFLAGS) $(RELOCATES) -o $(ROM)
 
 ${OBJDIR}/%.o: %.c ./Makefile
-	@#mirror the folder structure and build
+	@#mirror the folder structure
 	@mkdir -p "${@D}"
-	$(LCC) $(LCCFLAGS) -c -o $@ $<
+
+	@#compile object files
+	$(LCC) $(CFLAGS) $< -o $@
 
 -include $(DEPENDS)
