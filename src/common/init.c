@@ -11,7 +11,7 @@ void init(void)
 
 	a->process_flag = 1;
 	a->process_func = readJoypad;
-	a->bank = 0;
+	a->bank = BANK(readJoypad_bank);
 	a->next = NULL;
 
 	switchScene(0);

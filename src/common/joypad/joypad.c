@@ -1,9 +1,12 @@
+#pragma bank 255
+
 #include "joypad.h"
 #include "common/actor.h"
 
 #include <gb/gb.h>
 #include <gbdk/far_ptr.h>
 
+BANKREF(readJoypad_bank)
 u8 input_raw, input_press, input_hold, input_release;
 
 #pragma save
