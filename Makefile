@@ -70,6 +70,6 @@ ${OBJDIR}/%.o: %.c ./Makefile
 	@mkdir -p "${@D}"
 
 	@#compile object files
-	$(LCC) $(CFLAGS) $< -o $@
+	$(LCC) $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 -include $(DEPENDS)
