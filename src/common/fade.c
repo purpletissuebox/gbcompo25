@@ -6,7 +6,7 @@
 
 BANKREF(fadeScreen_bank)
 
-const u8 fadeLUT[32][32] = {
+const u8 fade_LUT[32][32] = {
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2},
@@ -96,63 +96,68 @@ void updateScreenColors(u8 fade_amt)
 		rl b
 		add a
 		rl b
+		add #<(_fade_LUT)
 		ld c, a
-		ld hl, #_fadeLUT
-		add hl, bc
+		ld a, b
+		adc #>(_fade_LUT)
+		ld b, a
 
-		ld bc, #_activeColors
+		ld hl, #_activeColors
 		ld de, #_colorBuf
 
 		UPDATESCREENCOLORS_ASM_LOOP :
-		push de
-			ld a, (bc)
-			inc c
-			add l
-			ld l, a
-			ld e, (hl)
-			and #224
-			ld l, a
+			push de
 
-			ld a, (bc)
-			inc c
-			add l
-			ld l, a
-			ld d, (hl)
-			and #224
-			ld l, a
-
-			ld a, (bc)
-			inc c
-			add l
-			ld l, a
-			ld b, (hl)
-			and #224
-			ld l, a
-
-			ld a, e
-			add a
-			add a
-			add a
-			rr d
-			rra
-			rr d
-			rra
-			rr d
-			rra
-			ld e, a
-			ld a, b
-			add a
-			add a
-			or d
+			push bc
+			ld a, (hl+)
+			add c
+			ld c, a
+			adc b
+			sub c
 			ld b, a
-			ld a, e
+			ld a, (bc)
+			ld e, a
+			pop bc
+
+			push bc
+			ld a, (hl+)
+			add c
+			ld c, a
+			adc b
+			sub c
+			ld b, a
+			ld a, (bc)
+			rrca
+			rrca
+			rrca
+			ld d, a
+			pop bc
+
+			push bc
+			ld a, (hl+)
+			add c
+			ld c, a
+			adc b
+			sub c
+			ld b, a
+			ld a, (bc)
+			pop bc
+
+			add a
+			add a
+			xor d
+			and #252
+			xor d
+			ldh (_scratch), a
+			ld a, d
+			and #224
+			or e
 			pop de
 			ld (de), a
 			inc de
-			ld a, b
+			ldh a, (_scratch)
 			ld (de), a
 			inc de
-			ld b, #>(_activeColors)
 
 			ld a, e
 			sub #<(_colorBuf + 64)
