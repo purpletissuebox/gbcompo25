@@ -1,8 +1,18 @@
-#include "hello.h"
+#pragma bank 255
+
 #include "common/actor.h"
-#include "common/fade.h"
 #include <gb/gb.h>
 #include <gb/cgb.h>
+#include <gbdk/incbin.h>
+
+BANKREF(loadBKG_bank)
+
+INCBIN(helloworld_tiledata, "res/logo/tiles.bin")
+INCBIN_EXTERN(helloworld_tiledata)
+INCBIN(helloworld_tilemap, "res/logo/map.bin")
+INCBIN_EXTERN(helloworld_tilemap)
+INCBIN(helloworld_attrmap, "res/logo/attr.bin")
+INCBIN_EXTERN(helloworld_attrmap)
 
 void loadBKG(Actor *self)
 {
