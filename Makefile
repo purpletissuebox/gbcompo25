@@ -1,51 +1,37 @@
-#filepath to gbdk installation
-ifndef GBDK_HOME
-	GBDK_HOME = ../gbdk/
-endif
-
 #################################
 #folder configuration
 
+BIN = ./build
+OBJ = ./obj
+SRC = ./src
+
 GAMENAME    = piupocket
-OBJDIR      = obj
-INCLUDEDIR  = src
-INCLUDEDIR += res
-
-#find all source files
-rwildcard   = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
-
-ROM         = $(OBJDIR)/$(GAMENAME).gbc
-SOURCES     = $(call rwildcard, ., *.c)
-OBJECTS     = $(patsubst ./%.c, ${OBJDIR}/%.o, ${SOURCES})
-RELOCATES   = $(patsubst %.o, %.r, $(OBJECTS))
-DEPENDS     = $(patsubst %.o, %.d, $(OBJECTS))
+ROM = ${BIN}/${GAMENAME}.gbc
 
 #################################
+#flag configuration
 
-#LCC compiler + flags
-LCCFLAGS += -debug -autobank
-LCC = $(GBDK_HOME)bin/lcc $(LCCFLAGS)
-#preprocessor flags
-#     track dependencies
-CPPFLAGS += -Wp-MMD
-#compiler flags
-#        warn as error       inc dir         do not link
-CFLAGS += -Wf--Werror $(INCLUDEDIR:%=-Wf-I%) -c
-#bankpack flags
-#        file extension    mbc      shuffle
-BANKFLAGS += -Wb-ext=.r -Wb-mbc=5 -Wb-random
-#makebin flags
-#            gbc    .sym  JP-flag    MBC      cart name         license code
-ROMFLAGS += -Wm-yC -Wm-yS -Wm-yj -Wm-yt0x1B -Wm-ynINFINITYPOCKET -Wm-yk":)"
+ASMFLAGS = -p 0xFF -Weverything -Werror
+LINKFLAGS = -p 0xFF -m ${BIN}/${GAMENAME}.map -n ${BIN}/${GAMENAME}.sym
+FIXFLAGS = -p 0xFF -C -v -i ELKS -j -k HB -l 0x33 -m mbc5+ram+battery -n 0 -r 4 -t gblinux -O
+#pad | gbc only | fix chksm | gameID | non-JP | licensee code | MBC | ver | ram size | title | ignore overwrite
+# p       C           v         i        j            kl         m     n       r         t            O
+
+#################################
+#retrieve ASM files
+
+rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+SRC_FILES = $(call rwildcard, ${SRC}, *.asm)
 
 ##################################
+#clean
 
 .PHONY: all
 all: ${ROM}
 
 .PHONY: clean
 clean:
-	rm -rf ${OBJDIR}
+	rm -rf ${BIN} ${OBJ}
 
 .PHONY: from-scratch
 from-scratch:
@@ -53,23 +39,17 @@ from-scratch:
 	${MAKE} all
 
 #################################
+# build the rom
 
-${ROM}: $(OBJECTS)
+${ROM}: $(patsubst ${SRC}/%.asm, ${OBJ}/%.o, ${SRC_FILES})
+	@#make build dir
+	@mkdir -p "${@D}"
+	@#link "all" ($^)
+	rgblink ${LINKFLAGS} -o $@ $^
+	rgbfix ${FIXFLAGS} $@
+
+${OBJ}/%.o: ${SRC}/%.asm
 	@#mirror the folder structure
 	@mkdir -p "${@D}"
-
-	@#create relocated objects with bankpack
-	$(LCC) $(BANKFLAGS) $^
-	rm ./a.*
-
-	@#create final rom
-	$(LCC) $(ROMFLAGS) $(RELOCATES) -o $(ROM)
-
-${OBJDIR}/%.o: %.c ./Makefile
-	@#mirror the folder structure
-	@mkdir -p "${@D}"
-
-	@#compile object files
-	$(LCC) $(CFLAGS) $(CPPFLAGS) $< -o $@
-
--include $(DEPENDS)
+	@#assemble the .asm ($^)
+	rgbasm ${ASMFLAGS} -o ${@} -I ./include $<
