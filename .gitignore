@@ -1,3 +1,4 @@
 .vs/
 obj/
 *.png
+build/

@@ -48,8 +48,19 @@ ${ROM}: $(patsubst ${SRC}/%.asm, ${OBJ}/%.o, ${SRC_FILES})
 	rgblink ${LINKFLAGS} -o $@ $^
 	rgbfix ${FIXFLAGS} $@
 
-${OBJ}/%.o: ${SRC}/%.asm
+# Either I added a make depends or I drastically misunderstood
+# the assignment
+${OBJ}/%.o: ${SRC}/%.asm ${OBJ}/%.d
 	@#mirror the folder structure
 	@mkdir -p "${@D}"
 	@#assemble the .asm ($^)
-	rgbasm ${ASMFLAGS} -o ${@} -I ./include $<
+	rgbasm ${ASMFLAGS} -o $@ -I ./include $<
+
+${OBJ}/%.d: ${SRC}/%.asm
+	@mkdir -p "${@D}"
+	@echo -n "${@:.d=.o}: $< " > $@
+	@grep -i '^\s*INCLUDE' $< | sed -E 's/^\s*INCLUDE\s+"([^"]+)".*/\1/' | \
+	awk -v dir=$(dir $<) '{ print dir $$0 }' >> $@
+#################################
+# include generated files
+-include $(patsubst ${SRC}/%.asm, ${OBJ}/%.d, ${SRC_FILES})
