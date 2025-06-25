@@ -1,27 +1,29 @@
 #################################
 #folder configuration
 
-BIN = ./build
-OBJ = ./obj
-SRC = ./src
+BIN_DIR = ./build
+OBJ_DIR = ./obj
+SRC_DIR = ./src
 
-GAMENAME    = piupocket
-ROM = ${BIN}/${GAMENAME}.gbc
+GAMENAME = piupocket
+ROM = ${BIN_DIR}/${GAMENAME}.gbc
 
 #################################
 #flag configuration
 
-ASMFLAGS = -p 0xFF -Weverything -Werror
-LINKFLAGS = -p 0xFF -m ${BIN}/${GAMENAME}.map -n ${BIN}/${GAMENAME}.sym
-FIXFLAGS = -p 0xFF -C -v -i ELKS -j -k HB -l 0x33 -m mbc5+ram+battery -n 0 -r 4 -t gblinux -O
-#pad | gbc only | fix chksm | gameID | non-JP | licensee code | MBC | ver | ram size | title | ignore overwrite
-# p       C           v         i        j            kl         m     n       r         t            O
+ASMFLAGS = -p 0xFF -Weverything -Werror -I ./src
+LINKFLAGS = -p 0xFF -m ${BIN_DIR}/${GAMENAME}.map -n ${BIN_DIR}/${GAMENAME}.sym
+FIXFLAGS = -p 0xFF -C -v -j -k HB -l 0x33 -m mbc5+ram+battery -n 0 -r 4 -t ${GAMENAME} -O
+#pad | gbc only | fix chksm | non-JP | licensee code | MBC | ver | ram size | title | ignore overwrite
+# p       C           v         j            kl         m     n       r         t            O
 
 #################################
 #retrieve ASM files
 
 rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
-SRC_FILES = $(call rwildcard, ${SRC}, *.asm)
+SRC_FILES = $(call rwildcard, ${SRC_DIR}, *.asm)
+OBJ_FILES = $(patsubst ./%.asm, ${OBJ_DIR}/%.o, ${SRC_FILES})
+DEPENDS   = $(patsubst %.o, %.d, ${OBJ_FILES})
 
 ##################################
 #clean
@@ -31,7 +33,7 @@ all: ${ROM}
 
 .PHONY: clean
 clean:
-	rm -rf ${BIN} ${OBJ}
+	rm -rf ${BIN_DIR} ${OBJ_DIR}
 
 .PHONY: from-scratch
 from-scratch:
@@ -41,26 +43,18 @@ from-scratch:
 #################################
 # build the rom
 
-${ROM}: $(patsubst ${SRC}/%.asm, ${OBJ}/%.o, ${SRC_FILES})
+${ROM}: ${OBJ_FILES}
 	@#make build dir
 	@mkdir -p "${@D}"
 	@#link "all" ($^)
 	rgblink ${LINKFLAGS} -o $@ $^
 	rgbfix ${FIXFLAGS} $@
 
-# Either I added a make depends or I drastically misunderstood
-# the assignment
-${OBJ}/%.o: ${SRC}/%.asm ${OBJ}/%.d
+${OBJ_DIR}/%.o: %.asm ./Makefile
 	@#mirror the folder structure
 	@mkdir -p "${@D}"
 	@#assemble the .asm ($^)
-	rgbasm ${ASMFLAGS} -o $@ -I ./include $<
+	rgbasm ${ASMFLAGS} -M ${@:.o=.d} $< -o $@
 
-${OBJ}/%.d: ${SRC}/%.asm
-	@mkdir -p "${@D}"
-	@echo -n "${@:.d=.o}: $< " > $@
-	@grep -i '^\s*INCLUDE' $< | sed -E 's/^\s*INCLUDE\s+"([^"]+)".*/\1/' | \
-	awk -v dir=$(dir $<) '{ print dir $$0 }' >> $@
-#################################
-# include generated files
--include $(patsubst ${SRC}/%.asm, ${OBJ}/%.d, ${SRC_FILES})
+-include ${DEPENDS}
+
