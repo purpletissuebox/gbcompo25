@@ -88,8 +88,14 @@ spawnActor::
 	inc de
 	ld h, a
 	or l
-	ret z
+	jr nz, .callInit
 	
+	pop bc
+	inc de
+	inc de
+	ret
+	
+	.callInit:
 	;get ptr to start of actor
 	pop bc
 	ld a, c
@@ -128,8 +134,8 @@ removeActor::
 	ld a, e
 	and ~(ACTORSIZE-1)
 	ld e, a
-	ld hl, actor_heap - 1
-	ld bc, ACTORSIZE-1
+	ld hl, actor_heap + ACTORSIZE - 5
+	ld bc, $0003
 	
 	.search:
 		add hl, bc
