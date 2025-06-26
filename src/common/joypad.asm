@@ -1,6 +1,6 @@
 SECTION "JOYPAD", ROMX
 readJoystick::
-	
+
 	ld hl, inputs ; point to input vars
 
     ;get the raw dpad data and store it in vars    
@@ -39,4 +39,12 @@ readJoystick::
 
     ld [hl], a
 
+	ret
+
+bootstrapActors::
+	ld hl, ACTORSIZE-2
+	add hl, bc
+	xor a
+	ldi [hl], a
+	ld [hl], a
 	ret
