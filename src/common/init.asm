@@ -82,8 +82,9 @@ init::
 	ld [hl], HIGH(actor_heap+ACTORSIZE-5) ;init global linked list ptrs
 	
 	ld c, (actor_heap.end - actor_heap)/ACTORSIZE
-	ld hl, actor_heap
+	ld hl, actor_heap - 4
 	ld de, ACTORSIZE
+	xor a
 	.clearActorSpace:
 		add hl, de
 		ldi [hl], a
@@ -103,7 +104,7 @@ init::
 	ldi [hl], a ;enable global sound registers
 	
 	xor a
-	lddouble bc, 1+(IO_SOUND4_PITCHH - IO_SOUND1_SWEEP), IO_SOUND1_SWEEP
+	lddouble bc, 1+(IO_SOUND4_PITCHH - IO_SOUND1_SWEEP), LOW(IO_SOUND1_SWEEP)
 	.soundLoop:
 		ldh [c], a
 		inc c
