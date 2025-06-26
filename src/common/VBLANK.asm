@@ -24,4 +24,3 @@ oam_routine_rom::
 SECTION "OAM DMA", HRAM
 oamRoutine::
 	ds oam_routine_rom.end - oam_routine_rom
-	

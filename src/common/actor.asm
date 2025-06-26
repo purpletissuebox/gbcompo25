@@ -168,4 +168,3 @@ removeActor::
 	ldd [hl], a
 	ld [hl], a
 	ret
-	
