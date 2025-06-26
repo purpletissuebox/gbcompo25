@@ -1,5 +1,6 @@
 SECTION "MAIN", ROM0
 MAIN::
+
     .loop:
-        halt 
+        halt                              
     jr MAIN.loop
