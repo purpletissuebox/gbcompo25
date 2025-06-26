@@ -15,6 +15,7 @@ shadow_win_attr::
 SECTION "OAM BUFFER", WRAMX, ALIGN[8]
 shadow_oam::
 	ds $A0
+	.end::
 
 SECTION "GFX BUFFERS", WRAMX
 shadow_scroll::
@@ -23,5 +24,6 @@ shadow_winloc::
 	ds 2
 shadow_bkg_palettes::
 	ds $40
+	.end::
 shadow_sprite_palettes::
 	ds $40
