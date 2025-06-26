@@ -6,4 +6,6 @@ MACRO NEWACTOR
 	db BANK(\2)
 	dw (\2)
 	dw (\1)
+	db BANK(\1)
+	db $00
 ENDM

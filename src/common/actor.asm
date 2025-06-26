@@ -1,4 +1,5 @@
 INCLUDE "common/actor.h"
+INCLUDE "macros.h"
 
 SECTION "ACTORHEAP", WRAM0
 next_free_actor::
@@ -56,8 +57,8 @@ spawnActor::
 	
 	;set end.next = us
 	pop bc
+	push bc
 	ld a, b
-	ldh [scratch], a
 	ldd [hl], a
 	ld [hl], c
 	
@@ -72,6 +73,8 @@ spawnActor::
 	
 	;flag empty slot as next available
 	ld a, l
+	dec a
+	dec a
 	ld b, h
 	ld hl, next_free_actor
 	ldi [hl], a
@@ -83,18 +86,26 @@ spawnActor::
 	ld l, a
 	ld a, [de]
 	inc de
-	or h
-	ret z
 	ld h, a
+	or l
+	ret z
 	
 	;get ptr to start of actor
-	ldh a, [scratch]
-	ld b, a
+	pop bc
 	ld a, c
 	and ~(ACTORSIZE-1)
 	ld c, a
-	
-	jp callHL
+	ldh a, [rom_bank]
+	push af
+	ld a, [de]
+	inc de
+	inc de
+	ldh [rom_bank], a
+	ld [MBC_ROM_BANK], a
+		
+	rst callHL
+	restoreBankRom
+	ret
 
 ;de = ptr to actor header
 ;a = variable
