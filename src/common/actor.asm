@@ -1,14 +1,4 @@
-EXPORT DEF ACTORSIZE EQU $0020
-
-;init, process, variable
-MACRO ACTORHEADER
-db (\3)
-db BANK(\2)
-dw (\2)
-dw (\1)
-ENDM
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+INCLUDE "common/actor.h"
 
 SECTION "ACTORHEAP", WRAM0
 next_free_actor::
