@@ -94,6 +94,7 @@ init::
 	
 	ld de, first_actor
 	call spawnActor
+	call spawnActor
 	
 	ld hl, IO_SOUND_MAIN_VOLUME
 	ld a, $77
@@ -119,3 +120,4 @@ init::
 
 first_actor:
 	NEWACTOR bootstrapActors, readJoystick, $00
+	NEWACTOR colorInit, fadeActor, $00
