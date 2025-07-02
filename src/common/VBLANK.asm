@@ -1,6 +1,17 @@
 SECTION "VBLANK HANDLER", ROM0
 VBLANK::
-	ret
+	ld a, CRAM_INCREMENT
+	ldh [IO_CRAM_BKG_SELECT], a
+	push hl
+	ld hl, shadow_bkg_palettes
+	.loop:
+		ldi a, [hl]
+		ldh [IO_CRAM_BKG_DATA], a
+		bit 6, l
+	jr z, .loop
+	pop hl
+	pop af
+	reti
 
 SECTION "VBLANK JUMP", ROM0
 vblankJump::
