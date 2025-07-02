@@ -1,7 +1,10 @@
+INCLUDE "common/colors.h"
+
 SECTION "SHADOW_PALETTES", WRAMX
-shadow_bkg_palettes:
+shadow_bkg_palettes::
 	ds $40
-shadow_oam_palettes:
+	.end::
+shadow_oam_palettes::
 	ds $40
 
 align 8
@@ -25,7 +28,13 @@ fade_LUT:
 
 ;num colors - speed - ptr - ptr
 color_table:
-	
+	FADEENTRY 4, logo_colors, 0.5
+
+logo_colors:
+	RGB5 6,13,10
+	RGB5 28, 31, 26
+	RGB5 17,24,14
+	RGB5 1,3,4
 
 ;a = FXXN NNNN
 ; N = number of colors to copy
@@ -150,7 +159,7 @@ updateScreenColors:
 
 colorInit::
 	;get ptr to color table entry
-	ld hl, ACTORSIZE-5
+	ld hl, ACTORSIZE-6
 	add hl, bc
 	ld a, [hl]
 	add a
@@ -203,11 +212,13 @@ colorInit::
 	cp $80
 	sbc a
 	ldi [hl], a
+	cpl
 	and d
 	ld [hl], a ;set fade_amt to 00FF/1F00 for speed <80 / >=80
 	ld a, e
 	cp $80
 	sbc a
+	cpl
 	xor e
 	ld d, a ;d = abs(speed) / e = raw speed
 	
@@ -263,6 +274,8 @@ colorInit::
 	.done:
 	xor a
 	ld [fade_complete], a
+	inc a
+	ldh [redraw_screen], a
 	bit 7, e
 	ret z
 	
@@ -289,7 +302,7 @@ fadeScreen:
 	ld a, [bc]
 	adc [hl]
 	cp $20
-	call c, fadeClamp
+	call nc, fadeClamp
 	ld [hl], a
 	jp updateScreenColors
 
@@ -309,4 +322,3 @@ fadeActor::
 	and a
 	jp nz, removeActor
 	ret
-	
