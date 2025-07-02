@@ -22,8 +22,3 @@ shadow_scroll::
 	ds 2
 shadow_winloc::
 	ds 2
-shadow_bkg_palettes::
-	ds $40
-	.end::
-shadow_sprite_palettes::
-	ds $40
