@@ -3,13 +3,17 @@ MACRO ldsz
 ENDM
 
 MACRO lddouble
-	ld \1, ((\2) << 8) | (\3)
+	ld \1, (LOW(\2) << 8) | LOW(\3)
 ENDM
 
 MACRO swapInRom
 	ldh a, [rom_bank]
 	push af
-	ld a, BANK(\1)
+	IF STRSUB("\1", 1, 1) == "["
+		ld a, \1
+	ELSE
+		ld a, BANK(\1)
+	ENDC
 	ldh [rom_bank], a
 	ld [MBC_ROM_BANK], a
 ENDM
