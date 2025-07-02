@@ -101,14 +101,9 @@ spawnActor::
 	ld a, c
 	and ~(ACTORSIZE-1)
 	ld c, a
-	ldh a, [rom_bank]
-	push af
-	ld a, [de]
+	swapInRom [de]
 	inc de
 	inc de
-	ldh [rom_bank], a
-	ld [MBC_ROM_BANK], a
-		
 	rst callHL
 	restoreBankRom
 	ret
