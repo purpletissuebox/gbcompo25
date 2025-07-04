@@ -1,4 +1,5 @@
 INCLUDE "common/colors.h"
+INCLUDE "macros.h"
 
 SECTION "SHADOW_PALETTES", WRAMX
 shadow_bkg_palettes::
@@ -158,6 +159,7 @@ updateScreenColors:
 	ret
 
 colorInit::
+	swapInRam shadow_bkg_palettes
 	;get ptr to color table entry
 	ld hl, ACTORSIZE-6
 	add hl, bc
@@ -276,6 +278,7 @@ colorInit::
 	ld [fade_complete], a
 	inc a
 	ldh [redraw_screen], a
+	restoreBankRam
 	bit 7, e
 	ret z
 	
@@ -315,10 +318,14 @@ fadeClamp:
 	ret
 	
 fadeActor::
+	swapInRam shadow_bkg_palettes
 	push bc
 	call fadeScreen
 	pop de
 	ld a, [fade_complete]
+	ld c, a
+	restoreBankRam
+	ld a, c
 	and a
 	jp nz, removeActor
 	ret

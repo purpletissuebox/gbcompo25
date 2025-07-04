@@ -1,5 +1,7 @@
 SECTION "VBLANK HANDLER", ROM0
 VBLANK::
+	ld a, BANK(shadow_bkg_palettes)
+	ldh [IO_WRAM_BANK], a
 	ld a, CRAM_INCREMENT
 	ldh [IO_CRAM_BKG_SELECT], a
 	push hl
@@ -9,6 +11,8 @@ VBLANK::
 		ldh [IO_CRAM_BKG_DATA], a
 		bit 6, l
 	jr z, .loop
+	ldh a, [ram_bank]
+	ldh [IO_WRAM_BANK], a
 	pop hl
 	pop af
 	reti
