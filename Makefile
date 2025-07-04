@@ -12,7 +12,7 @@ ROM = ${BIN_DIR}/${GAMENAME}.gbc
 #flag configuration
 
 ASMFLAGS = -p 0xFF -Weverything -Werror -I ./src
-LINKFLAGS = -p 0xFF -m ${BIN_DIR}/${GAMENAME}.map -n ${BIN_DIR}/${GAMENAME}.sym
+LINKFLAGS = -p 0xFF -m ${BIN_DIR}/${GAMENAME}.map -n ${BIN_DIR}/${GAMENAME}.sym -S romx=255,wramx=7
 FIXFLAGS = -p 0xFF -C -v -j -k HB -l 0x33 -m mbc5+ram+battery -n 0 -r 4 -t ${GAMENAME} -O
 #pad | gbc only | fix chksm | non-JP | licensee code | MBC | ver | ram size | title | ignore overwrite
 # p       C           v         j            kl         m     n       r         t            O
