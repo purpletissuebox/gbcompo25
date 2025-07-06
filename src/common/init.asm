@@ -94,7 +94,6 @@ init::
 	
 	ld de, first_actor
 	call spawnActor
-	call spawnActor
 	
 	ld hl, IO_SOUND_MAIN_VOLUME
 	ld a, $77
@@ -112,6 +111,9 @@ init::
 		dec b
 	jr nz, init.soundLoop ;disable individual channel sound registers
 	
+	xor a
+	call changeScene
+	
 	ldh a, [IO_INTERRUPT_REQUEST]
 	and ~INTERRUPT_VBLANK
 	ldh [IO_INTERRUPT_REQUEST], a
@@ -120,4 +122,3 @@ init::
 
 first_actor:
 	NEWACTOR bootstrapActors, readJoystick, $00
-	NEWACTOR colorInit, fadeActor, $00
