@@ -3,7 +3,7 @@ INCLUDE "common/actor.h"
 
 SECTION "MAIN", ROM0
 MAIN::
-	ld hl, actor_heap + ACTORSIZE - 5
+	ld hl, actor_heap + ACTORMAIN
 	.loop:
 		ldi a, [hl]
 		ldh [rom_bank], a

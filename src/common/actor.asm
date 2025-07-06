@@ -24,9 +24,9 @@ spawnActor::
 	;copy variable, main function, and bank
 	dec l
 	ld a, [de]
-	.variableEntry:
 	inc de
 	ldi [hl], a
+	.variableEntry:
 	ld a, [de]
 	inc de
 	ldi [hl], a
@@ -129,7 +129,7 @@ removeActor::
 	ld a, e
 	and ~(ACTORSIZE-1)
 	ld e, a
-	ld hl, actor_heap + ACTORSIZE - 5
+	ld hl, actor_heap + ACTORMAIN
 	ld bc, $0003
 	
 	.search:

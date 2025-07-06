@@ -162,7 +162,7 @@ updateScreenColors:
 colorInit::
 	swapInRam shadow_bkg_palettes
 	;get ptr to color table entry
-	ld hl, ACTORSIZE-6
+	ld hl, VARIABLE
 	add hl, bc
 	ld a, [hl]
 	add a

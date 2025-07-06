@@ -77,9 +77,9 @@ init::
 	ldh [redraw_screen], a ;initialize system hram variables
 	
 	ld hl, next_free_actor
-	ld a, LOW(actor_heap+ACTORSIZE-5)
+	ld a, LOW(actor_heap+ACTORMAIN)
 	ldi [hl], a
-	ld [hl], HIGH(actor_heap+ACTORSIZE-5) ;init global linked list ptrs
+	ld [hl], HIGH(actor_heap+ACTORMAIN) ;init global linked list ptrs
 	
 	ld c, (actor_heap.end - actor_heap)/ACTORSIZE
 	ld hl, actor_heap - 4

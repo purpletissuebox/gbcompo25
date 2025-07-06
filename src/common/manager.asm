@@ -17,7 +17,8 @@ child:
 SECTION "MANAGER", ROMX
 managerActor:
 	push bc
-	ld hl, ACTORSIZE-6
+	ld hl, VARIABLE
+	add hl, bc
 	ld a, [hl]
 	ld hl, actor_table
 	ld d, a
