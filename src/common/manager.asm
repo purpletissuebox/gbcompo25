@@ -49,6 +49,6 @@ managerActor:
 
 actor_table:
 	dw logo_actors
-	db 1
+	db (logo_actors.end - logo_actors)>>3
 
 INCLUDE "logo/actorList.h"
