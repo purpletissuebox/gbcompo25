@@ -14,16 +14,15 @@ init::
 	
 	ld a, BANK(shadow_oam)
 	ldh [IO_WRAM_BANK], a
-	ld a, $A7
-	ld hl, shadow_winloc + 1
-	ldd [hl], a
-	ldd [hl], a ;window position
 	xor a
-	ldd [hl], a
-	ldd [hl], a ;bkg scroll
 	ld hl, shadow_oam
 	ldsz c, shadow_oam
 	rst memset ;init oam
+	ldi [hl], a
+	ldi [hl], a ;bkg scroll
+	ld a, $A7
+	ldi [hl], a
+	ldi [hl], a ;window position
 	
 	ld hl, vblankJump
 	ld a, $C3

@@ -1,4 +1,5 @@
 INCLUDE "macros.h"
+INCLUDE "common/gfx.h"
 
 SECTION "GFX VARS", HRAM
 redraw_screen::
@@ -18,8 +19,6 @@ SECTION "OAM BUFFER", WRAMX, ALIGN[8]
 shadow_oam::
 	ds $A0
 	.end::
-
-SECTION "GFX BUFFERS", WRAMX
 shadow_scroll::
 	ds 2
 shadow_winloc::
@@ -35,6 +34,8 @@ loadTiles::
 	ldi a, [hl]
 	ld d, a
 	ldi a, [hl]
+	and $01
+	ldh [IO_VRAM_BANK], a
 	ld c, a
 	ldi a, [hl]
 	ld b, a
