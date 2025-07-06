@@ -27,3 +27,11 @@ MACRO NEWACTOR
 		db $FF
 	ENDC
 ENDM
+
+MACRO updateActorMain
+	ld hl, ACTORMAIN+1
+	add hl, bc
+	ld a, LOW(\1)
+	ldi [hl], a
+	ld [hl], HIGH(\1)
+ENDM
