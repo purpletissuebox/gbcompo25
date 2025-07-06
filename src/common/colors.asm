@@ -30,6 +30,7 @@ fade_LUT:
 ;num colors - speed - ptr - ptr
 color_table:
 	FADEENTRY 4, logo_colors, 0.5
+	FADEENTRY 4, logo_colors, -0.5
 
 logo_colors:
 	RGB5 6,13,10
