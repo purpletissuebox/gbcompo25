@@ -37,15 +37,3 @@ MACRO restoreBankRam
 	ldh [ram_bank], a
 	ldh [IO_WRAM_BANK], a
 ENDM
-
-MACRO waitVRAM
-	.mode3\@:
-		ldh a, [IO_LCD_STATUS]
-		inc a
-		and (PPU_MODE & 2)
-	jr nz, .mode3\@
-	.mode0\@:
-		ldh a, [IO_LCD_STATUS]
-		and (PPU_MODE & 2)
-	jr nz, .mode0\@
-ENDM

@@ -1,3 +1,5 @@
+INCLUDE "hwregs.h"
+
 ;src, dest
 ;src, dest, size
 ;src, off, dest, off
@@ -24,4 +26,16 @@ MACRO GFXTASK
 	ELSE
 		db (\5) - 1
 	ENDC
+ENDM
+
+MACRO waitVRAM
+	.mode3\@:
+		ldh a, [IO_LCD_STATUS]
+		inc a
+		and PPU_MODE
+	jr nz, .mode3\@
+	.mode0\@:
+		ldh a, [IO_LCD_STATUS]
+		and PPU_MODE
+	jr nz, .mode0\@
 ENDM
