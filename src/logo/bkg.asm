@@ -14,12 +14,13 @@ logoGfx::
 	jp loadTiles
 
 logo_tiles:
-	GFXTASK logo_tiles_data, $8800
+	GFXTASK logo_tiles_data, $9000
 logo_map:
 	GFXTASK logo_map_data, $9800
 logo_attr:
 	GFXTASK logo_attr_data, $9801
 
+align 4
 logo_tiles_data:
 	INCBIN "logo/gfx/tiles.bin"
 	.end
