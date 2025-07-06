@@ -1,10 +1,24 @@
+INCLUDE "hwregs.h"
+
 SECTION "VBLANK HANDLER", ROM0
 VBLANK::
+	push hl
+	ld a, BANK(shadow_scroll)
+	ldh [IO_WRAM_BANK], a
+	ld hl, shadow_scroll
+	ldi a, [hl]
+	ldh [IO_SCROLL_Y], a
+	ldi a, [hl]
+	ldh [IO_SCROLL_X], a
+	ldi a, [hl]
+	ldh [IO_WINDOW_Y], a
+	ldi a, [hl]
+	ldh [IO_WINDOW_X], a
+	
 	ld a, BANK(shadow_bkg_palettes)
 	ldh [IO_WRAM_BANK], a
 	ld a, CRAM_INCREMENT
 	ldh [IO_CRAM_BKG_SELECT], a
-	push hl
 	ld hl, shadow_bkg_palettes
 	.loop:
 		ldi a, [hl]
