@@ -10,20 +10,33 @@ logoStall::
 	ld a, e
 	and a
 	ret z
-	updateActorMain logoTick
+	updateActorMain fadeout
 	ret
 
-logoTick:
+fadeout:
 	ld hl, VARIABLE
 	add hl, bc
 	dec [hl]
 	ret nz
 	
-	push bc
-	ld de, .fadeout_actor
-	call spawnActor
-	pop de
-	jp removeActor
+	updateActorMain awaitDeath
+	ld de, fadeout_actor
+	jp spawnActor
 
-.fadeout_actor:
+awaitDeath:
+	swapInRam fade_complete
+	ld a, [fade_complete]
+	ld e, a
+	restoreBankRam
+	ld a, e
+	and a
+	ret z
+	
+	ld e, c
+	ld d, b
+	call removeActor
+	ld a, 1
+	jp changeScene
+
+fadeout_actor:
 	NEWACTOR colorInit, fadeActor, $01
