@@ -241,7 +241,7 @@ colorInit::
 		sub $FA
 		ldi [hl], a
 		ld a, d
-		sub $0C
+		sbc $0C
 		ld [hl], a
 		jr .done
 	.slower:

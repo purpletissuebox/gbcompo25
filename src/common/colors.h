@@ -21,21 +21,21 @@ MACRO FADEENTRY
 ENDM
 
 MACRO FADESPEED
-	  IF (\1) < -2.0
-		($FF ^ (ROUND(-64.0   +DIV(-256.0, (\1))) >> 16))
-	ELIF (\1) < -1.0
-		db $FF ^ (ROUND( 32.0   +DIV( -64.0, (\1))) >> 16)
-	ELIF (\1) < -0.5
-		db $FF ^ (ROUND( 79.25  +DIV( -16.0, (\1))) >> 16)
+	  IF (\1) < -2.033
+		db $FF ^ (ROUND(-64.0   +DIV(-257.201, (\1))) >> 16)
+	ELIF (\1) < -1.021
+		db $FF ^ (ROUND( 32.0   +DIV( -64.300, (\1))) >> 16)
+	ELIF (\1) < -0.519
+		db $FF ^ (ROUND( 79.25  +DIV( -16.075, (\1))) >> 16)
 	ELIF (\1) < 0.0
-		db $FF ^ (ROUND(103.8125+DIV(  -4.0, (\1))) >> 16)
-	ELIF (\1) < 0.5
-		db        ROUND(103.8125+DIV(   4.0, (\1))) >> 16
-	ELIF (\1) < 1.0
-		db        ROUND( 79.25  +DIV(  16.0, (\1))) >> 16
-	ELIF (\1) < 2.0
-		db        ROUND( 32.0   +DIV(  64.0, (\1))) >> 16
-	ELIF (\1) < 4.0
-		db        ROUND(-64.0   +DIV( 256.0, (\1))) >> 16
+		db $FF ^ (ROUND(103.8125+DIV(  -4.019, (\1))) >> 16)
+	ELIF (\1) < 0.519
+		db        ROUND(103.8125+DIV(   4.019, (\1))) >> 16
+	ELIF (\1) < 1.021
+		db        ROUND( 79.25  +DIV(  16.075, (\1))) >> 16
+	ELIF (\1) < 2.033
+		db        ROUND( 32.0   +DIV(  64.300, (\1))) >> 16
+	ELIF (\1) < 4.035
+		db        ROUND(-64.0   +DIV( 257.201, (\1))) >> 16
 	ENDC
 ENDM
