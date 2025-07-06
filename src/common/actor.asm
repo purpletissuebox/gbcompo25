@@ -104,7 +104,9 @@ spawnActor::
 	swapInRom [de]
 	inc de
 	inc de
+	push de
 	rst callHL
+	pop de
 	restoreBankRom
 	ret
 
