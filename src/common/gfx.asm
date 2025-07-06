@@ -27,7 +27,7 @@ shadow_winloc::
 
 SECTION "GFX ROUTINES", ROM0
 ;hl = ptr to gfx task
-loadTiles:
+loadTiles::
 	;get ptr to src and dest
 	swapInRom [hl+]
 	ldi a, [hl]
