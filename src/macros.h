@@ -37,3 +37,9 @@ MACRO restoreBankRam
 	ldh [ram_bank], a
 	ldh [IO_WRAM_BANK], a
 ENDM
+
+MACRO createCharmap
+    FOR X, STRLEN(\2)
+        CHARMAP STRSUB(\2, X+1, 1), X+(\1)
+    ENDR
+ENDM
