@@ -14,6 +14,7 @@ readJoystick::
     ; skill issue likely, but do not want to fix 
 
     ;get the raw bton data 
+    ld a, JOYPAD_B
     ld [IO_JOYPAD], a 
     ; 18 Clocks of debounce for btons
     ldh a, [IO_JOYPAD]
