@@ -52,6 +52,9 @@ actor_table:
 	db (logo_actors.end - logo_actors)>>3
 	dw title_actors
 	db (title_actors.end - title_actors)>>3
+	dw menu_actors
+	db (menu_actors.end - menu_actors)>>3
 
 INCLUDE "logo/actorList.h"
 INCLUDE "title/actorList.h"
+INCLUDE "menu/actorList.h"
