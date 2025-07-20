@@ -1,230 +1,214 @@
 INCLUDE "macros.h"
+INCLUDE "common/gfx.h"
+INCLUDE "common/actor.h"
 
 NEWCHARMAP vwf
-createCharmap 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ,.-!?$&()~@"
+createCharmap 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ.,'!?abcdefghijklmnopqrstuvwxyz-\"(): "
+CHARMAP "$", 0xFFFF
+PUSHC vwf
 
-SECTION "VWF VARS", RAMX
-next_open_px:
-	ds 1
-current_tile:
-	ds 1
+SECTION "VWF VARS", WRAMX, ALIGN[8]
 print_buf:
-	ds 16*12
+	ds 16*13
+	.end
+x_position:
+	ds 1
 
-SECTION "VWF", ROMX
-align 5
+SECTION "VWF", ROMX, ALIGN[8]
 font_data:
-	db $200
+	INCBIN "menu/font.bin"
 
 letter_sizes:
-	db $20
+	INCBIN "menu/widths.bin"
 
+gfx_task:
+	GFXTASK print_buf, $9001
+
+vwf_strings:
+	.s00:
+		db "test string wahoo!", 0
+	.s01:
+		db "Addy reference?", 0
+	.s02:
+		db ".,'\"!?-():", 0
+
+vwfSpawner::
+	push bc
+	ld a, HIGH(vwf_strings.s01)
+	ldh [scratch], a
+	ld a, LOW(vwf_strings.s01)
+	ld de, .actor
+	call spawnActorVariable
+	pop de
+	jp removeActor
+	
+	.actor:
+		NEWACTOR vwfInit, vwfTick, $00
+
+vwfTick::
+	ld a, [bc]
+	ld e, a
+	add $01
+	ld [bc], a
+	
+	inc c
+	ld a, [bc]
+	ld d, a
+	adc $00
+	ld [bc], a
+	
+	ld a, [de]
+	and a
+	jr z, .dead
+	
+	call vwfPrintChar
+	ld hl, gfx_task
+	jp loadTiles
+	
+	.dead:
+	ld e, c
+	ld d, b
+	jp removeActor
+
+;bc = ptr to actor
 vwfInit::
+	;transfer scratch+variable to actor to form ptr to string
+	;simultaneously put it in hl
 	ld hl, VARIABLE
 	add hl, bc
 	ld a, [hl]
-	add a
-	add LOW(string_table)
+	ld [bc], a
+	inc c
 	ld l, a
-	adc HIGH(string_table)
-	sub l
+	ldh a, [scratch]
+	ld [bc], a
 	ld h, a
 	
-	ldi a, [hl]
-	ld d, [hl]
-	ld e, a
 	call strwid
 	
-	ld a, $60
-	sub l
-	rra
-	ld e, a
+	swapInRam print_buf
+	ld hl, print_buf
+	ldsz c, print_buf
+	xor a
+	.erase:
+		ldi [hl], a
+		dec c
+	jr nz, .erase		
 	
-	ld hl, next_open_px
-	and $07
-	ldi [hl], a
-	ld a, e
-	and $F8
-	rrca
-	rrca
-	rrca
-	add LOW(print_buf)
-	ld [hl], a
+	ld a, 12*8
+	sub b
+	rra
+	ld [x_position], a
+	
+	restoreBankRam
+	ret
+	
+	
 	ret
 
-;de = ptr to string
+;hl = ptr to string
 strwid:
-	ld b, HIGH(letter_sizes)
-	ld l, $00
-	ld a, [de]
-	inc de
-	and a
-	ret z
+	ld b, $00
+	ld d, HIGH(letter_sizes)
 	
+	ldi a, [hl]
 	.loop:
-		add LOW(letter_sizes)
-		ld c, a
-		ld a, [bc]
-		add l
-		ld l, a
+		ld e, a
 		ld a, [de]
-		inc de
+		add b
+		ld b, a
+		ldi a, [hl]
 		and a
 	jr nz, .loop
 	ret	
 
-;a = tileID
-;bc = ptr to gfx task
 ;de = ptr to string
 vwfPrintString::
-	push bc
-	inc c
-	inc c
-	inc c
-	
-	ld h, a
-	swap a
-	ld l, a
-	and $F0
-	ld [bc], a
-	inc c
-	
-	ld a, h
-	add a
-	sbc a
-	and $F8
-	ld h, a
-	ld a, l
-	and $0F
-	add $90
-	add h
-	ld [bc], a
-	
 	ld a, [de]
-	inc de
+	
 	.loop:
+		inc de
 		push de
 		call vwfPrintChar
 		pop de
 		ld a, [de]
-		inc de
 		and a
 	jr nz, .loop
-	
-	pop de
-	call removeActor
-	ld l, e
-	ld h, d
-	jp loadTiles
+	ret
 
-vwfPrintLetter:
-	ld e, a
-	swap a
+;a = letterID
+vwfPrintChar:
 	ld d, a
-	and $0F
-	ld b, a
-	ld a, d
-	and $F0
-	add LOW(font_data)
-	ld c, a
-	adc HIGH(font_data)
-	sub c
-	add b
-	ld b, a
 	
-	ld hl, next_open_px
-	ldi a, [hl]
-	ld l, [hl]
-	ld h, HIGH(print_buf)
-	ld d, a
-	push de
+	add a
+	add a
+	add a
+	ld c, a
+	sbc a
 	cpl
 	inc a
-	and $07
+	add HIGH(font_data)
+	ld b, a
 	
-	sub $04
-	jr c, .daaBig
-	add $02
-	adc $03
-	jr .daaDone
-	.daaBig:
-	add $FE
-	adc $03
-	swap a
-	.daaDone:
+	swapInRam print_buf
+	push de
+	
+	ld hl, x_position
+	ld a, [hl]
+	and $F8
 	add a
-	daa
-	rra
-	dec a
 	ld e, a
+	ld d, HIGH(print_buf)
+	
+	ld a, [hl]
+	and $07
+	cpl
+	add $09
+	ldh [scratch], a
 	
 	.loop:
 		ld a, [bc]
 		inc c
-		ld d, a
-		ld a, [bc]
-		inc c
-		push bc
-		
-		push hl
-		ld l, d
-		ld h, a
-		xor a
-		bit 0, e
-		jr z, .skipShift
-		ld d, e
-		.doShift:
+		ld l, a
+		ld h, $00
+		ldh a, [scratch]
+		.shift:
 			add hl, hl
-			rla
-			rr d
-			jr nc, .doShift
-		.skipShift:
-		ld c, l
-		ld b, h
-		pop hl
+			dec a
+		jr nz, .shift
 		
-		or [hl]
-		ldi [hl], a
-		ld a, b
-		and e
-		or [hl]
-		ldd [hl], a
-		ld a, l
-		add $10
-		ld l, a
-		
+		ld a, [de]
+		or h
+		ld [de], a
+		inc e
+		ld [de], a
 		ld a, e
-		cpl
-		and b
-		ldi [hl], a
-		ld a, c
-		ldi [hl], a
-		ld a, l
-		sub $10
-		ld l, a
+		add $10
+		ld e, a
 		
-		pop bc
-		and $0F
+		ld a, l
+		ld [de], a
+		dec e
+		ld [de], a
+		ld a, e
+		sub $0E
+		ld e, a
+		
+		ld a, c
+		and $07
 	jr nz, .loop
 	
-	pop de
-	ld a, e
+	pop af
 	add LOW(letter_sizes)
-	ld c, a
-	adc HIGH(letter_sizes)
-	sub c
-	ld b, a
-	ld a, [bc]
+	ld e, a
+	ld d, HIGH(letter_sizes)
 	
-	ld hl, next_open_px
-	add d
-	and $07
-	ldi [hl], a
-	inc d
-	sub d
-	ret nc
+	ld hl, x_position
+	ld a, [de]
+	add [hl]
+	ld [hl], a
 	
-	inc [hl]
+	restoreBankRam
 	ret
 
 POPC
